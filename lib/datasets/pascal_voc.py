@@ -267,38 +267,49 @@ class pascal_voc(imdb):
                     raise AssertionError('y points are out')
 
             ############## HBB
-            xss = [min(xs), max(xs), max(xs), min(xs)]
-            yss = [min(ys), min(ys), max(ys), max(ys)]
-            x1 = float(xss[0])
-            y1 = float(yss[0])
-            x2 = float(xss[2])
-            y2 = float(yss[2])
 
-            if x1 < 1.0: x1 = 1.0
-            if y1 < 1.0: y1 = 1.0
-            if x2 > image_width: x2 = image_width
-            if y2 > image_height: y2 = image_height
+            for idx in range(len(xs)):
+                if xs[idx] < 1.0: 
+                    xs[idx] = 1.0
+                elif xs[idx] > image_width:
+                    xs[idx] = image_width
+
+            for idx in range(len(ys)):
+                if ys[idx] < 1.0: 
+                    ys[idx] = 1.0
+                elif ys[idx] > image_height:
+                    ys[idx] = image_height
+
+            x1 = float(xs[0])
+            y1 = float(ys[0])
+            x2 = float(xs[1])
+            y2 = float(ys[1])
+            x3 = float(xs[2])
+            y3 = float(ys[2])
+            x4 = float(xs[3])
+            y4 = float(ys[3])
+
             # Make pixel indexes 0-based original faster rcnn
             x1 -= 1
             y1 -= 1
             x2 -= 1
             y2 -= 1
-            # x1 = float(bbox.find('xmin').text) - 1
-            # y1 = float(bbox.find('ymin').text) - 1
-            # x2 = float(bbox.find('xmax').text) - 1
-            # y2 = float(bbox.find('ymax').text) - 1
+            x3 -= 1
+            y3 -= 1
+            x4 -= 1
+            y4 -= 1
 
 
             #print 'read coordinates are xmin {}, ymin {}, xmax{}, ymax{}'.format(x1,y1,x2,y2)
 
             cls = self._class_to_ind[obj.find('name').text.lower().strip()]
             #print 'class is {}'.format(cls)
-            boxes[ix, :] = [x1, y1, x2, y2]
+            boxes[ix, :] = [x1, y1, x2, y2, x3, y3, x4, y4]
             gt_classes[ix] = cls
             #print 'read coordinates are box {}, class {}'.format(boxes[ix, :], gt_classes[ix])
             overlaps[ix, cls] = 1.0
             seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
-        assert (boxes[:, 2] >= boxes[:, 0]).all()
+        #assert (boxes[:, 2] >= boxes[:, 0]).all()
         overlaps = scipy.sparse.csr_matrix(overlaps)
 
         return {'boxes': boxes,
