@@ -81,10 +81,23 @@ class AnchorTargetLayer(caffe.Layer):
         # map of shape (..., H, W)
         height, width = bottom[0].data.shape[-2:]
         # GT boxes (x1, y1, x2, y2, label)
-        gt_boxes = bottom[1].data
+
+        # TODO to investigate
+        # GT boxes (x1, y1, x2, y2, x3, y3, x4, y4, label)
+        # here we should change from 8PointTo4Point
+        #gt_boxes = bottom[1].data
+        gt_boxes_8Point = bottom[1].data
+        # todo check this part  only possible error is not using :
+        x1 = min([gt_boxes_8Point[0], gt_boxes_8Point[2],gt_boxes_8Point[4],gt_boxes_8Point[6]])
+        y1 = min([gt_boxes_8Point[1], gt_boxes_8Point[3], gt_boxes_8Point[5], gt_boxes_8Point[7]])
+        x2 = max([gt_boxes_8Point[0], gt_boxes_8Point[2], gt_boxes_8Point[4], gt_boxes_8Point[6]])
+        y2 = max([gt_boxes_8Point[1], gt_boxes_8Point[3], gt_boxes_8Point[5], gt_boxes_8Point[7]])
+        label = gt_boxes_8Point[-1]
+        gt_boxes = (x1, y1, x2, y2, label)
         # im_info
         im_info = bottom[2].data[0, :]
-
+        # activate Debug to see ground truth
+        DEBUG = True
         if DEBUG:
             print ''
             print 'im_size: ({}, {})'.format(im_info[0], im_info[1])

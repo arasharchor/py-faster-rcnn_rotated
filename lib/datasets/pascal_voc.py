@@ -154,6 +154,7 @@ class pascal_voc(imdb):
                'rpn data not found at: {}'.format(filename)
         with open(filename, 'rb') as f:
             box_list = cPickle.load(f)
+        ## todo to investigate the following function! that is in imdb
         return self.create_roidb_from_box_list(box_list, gt_roidb)
 
     def _load_selective_search_roidb(self, gt_roidb):
@@ -166,6 +167,7 @@ class pascal_voc(imdb):
 
         box_list = []
         for i in xrange(raw_data.shape[0]):
+            # todo possible rotation change potential change is needed!
             boxes = raw_data[i][:, (1, 0, 3, 2)] - 1
             keep = ds_utils.unique_boxes(boxes)
             boxes = boxes[keep, :]
@@ -266,7 +268,7 @@ class pascal_voc(imdb):
                     print image_width
                     raise AssertionError('y points are out')
 
-            ############## HBB
+            ############## RBB
 
             for idx in range(len(xs)):
                 if xs[idx] < 1.0: 

@@ -25,6 +25,8 @@ class ProposalTargetLayer(caffe.Layer):
         layer_params = yaml.load(self.param_str_)
         self._num_classes = layer_params['num_classes']
 
+        # todo to investigate
+        '''
         # sampled rois (0, x1, y1, x2, y2)
         top[0].reshape(1, 5)
         # labels
@@ -35,12 +37,44 @@ class ProposalTargetLayer(caffe.Layer):
         top[3].reshape(1, self._num_classes * 4)
         # bbox_outside_weights
         top[4].reshape(1, self._num_classes * 4)
+        '''
+
+        # sampled rois (0, x1, y1, x2, y2, x3, y3, x4, y4)
+        top[0].reshape(1, 9)
+        # labels
+        top[1].reshape(1, 1)
+        # bbox_targets
+        top[2].reshape(1, self._num_classes * 8)
+        # bbox_inside_weights
+        top[3].reshape(1, self._num_classes * 8)
+        # bbox_outside_weights
+        top[4].reshape(1, self._num_classes * 8)
 
     def forward(self, bottom, top):
+
+        """
         # Proposal ROIs (0, x1, y1, x2, y2) coming from RPN
         # (i.e., rpn.proposal_layer.ProposalLayer), or any other source
         all_rois = bottom[0].data
+
         # GT boxes (x1, y1, x2, y2, label)
+
+        """
+
+        # TODO to investigate
+        # Proposal ROIs (0, x1, y1, x2, y2) coming from RPN but we change them
+        # to 8 Point
+        # (i.e., rpn.proposal_layer.ProposalLayer), or any other source
+        all_rois_4Point = bottom[0].data
+        #print(all_rois_4Point)
+        # TODO only possible error is not using :
+        all_rois = (all_rois_4Point[0], all_rois_4Point[1], all_rois_4Point[2],
+                    all_rois_4Point[3], all_rois_4Point[2],
+                    all_rois_4Point[3], all_rois_4Point[4],
+                    all_rois_4Point[1], all_rois_4Point[4])
+        # GT boxes (x1, y1, x2, y2, x3, y3, x4, y4, label)
+
+
         # TODO(rbg): it's annoying that sometimes I have extra info before
         # and other times after box coordinates -- normalize to one format
         gt_boxes = bottom[1].data
@@ -64,7 +98,6 @@ class ProposalTargetLayer(caffe.Layer):
         labels, rois, bbox_targets, bbox_inside_weights = _sample_rois(
             all_rois, gt_boxes, fg_rois_per_image,
             rois_per_image, self._num_classes)
-
         if DEBUG:
             print 'num fg: {}'.format((labels > 0).sum())
             print 'num bg: {}'.format((labels == 0).sum())
